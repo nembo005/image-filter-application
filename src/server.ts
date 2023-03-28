@@ -1,10 +1,10 @@
-import express, {NextFunction, Request, Response}  from 'express';
+import express, {Request, Response}  from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
-interface Image {
+/* interface Image {
   image_url: string;
-}
+} */
 
 (async () => {
 
@@ -32,18 +32,20 @@ interface Image {
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
-  app.get("/filteredimage", async (req: Request, res: Response, next: NextFunction) => {
-    const {image_url} = req.query as Image;
+  app.get("/filteredimage", async (req: Request, res: Response) => {
+    const image_url: string = req.query.image_url;
+    try {
     if (!image_url){
       return res.status(404).send("Image not found")
     }
-    try {
-      let path = await filterImageFromURL(image_url) as string;
+    
+      let path: string = await filterImageFromURL(image_url);
       return res.status(200).sendFile(path, () => {
         deleteLocalFiles([path]);
       })
-    } catch(err){
-        return next(err)
+    } 
+    catch{
+        return res.status(500).send("Server error. Provide the right link")
     }
   })
   //! END @TODO1
